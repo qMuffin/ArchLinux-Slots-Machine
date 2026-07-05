@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <unistd.h>
+#include <string.h>
 
 // Array of slot emoji symbols (Using string pointers since emojis are multi-byte characters)
 const char* SYMBOLS[] = {"🍒", "🍋", "🍊", "🍉", "👑"};
@@ -18,32 +19,32 @@ const int NUM_SYMBOLS = 5;
 void print_reel(const char* sym) {
     // Check byte sequences to safely apply background/text colors
     if (sym[0] == '\xf0' && sym[1] == '\x9f' && sym[2] == '\x91' && sym[3] == '\x91') {
-        printf(YELLOW "[%s]" RESET, sym); // 👑
-    } else if (sym[0] == '\xf0' && sym[1] == '\x9f' && sym[2] == '\x8d' && sym[3] == '\x92') {
-        printf(RED "[%s]" RESET, sym); // 🍒
-    } else if (sym[0] == '\xf0' && sym[1] == '\x9f' && sym[2] == '\x8d' && sym[3] == '\x8b') {
-        printf(GREEN "[%s]" RESET, sym); // 🍋
-    } else if (sym[0] == '\xf0' && sym[1] == '\x9f' && sym[2] == '\x8d' && sym[3] == '\x89') {
-        printf(MAGENTA "[%s]" RESET, sym); // 🍉
+        printf(YELLOW "[ %s ]" RESET, sym); // 👑
+    } else if (sym[0] == '\xf0' && sym[1] == '\x9f' && sym[2] == '\x8d' && sym[3] == '\x92') { 
+        printf(RED "[ %s ]" RESET, sym); // 🍒
+    } else if (sym[0] == '\xf0' && sym[1] == '\x9f' && sym[2] == '\x8d' && sym[3] == '\x8b') { 
+        printf(GREEN "[ %s ]" RESET, sym); // 🍋
+    } else if (sym[0] == '\xf0' && sym[1] == '\x9f' && sym[2] == '\x8d' && sym[3] == '\x89') { 
+        printf(MAGENTA "[ %s ]" RESET, sym); // 🍉
     } else {
-        printf(BLUE "[%s]" RESET, sym); // 🍊
+        printf(BLUE "[ %s ]" RESET, sym); // 🍊
     }
 }
 
 int main() {
     int balance = 1000;
     int bet;
-
+    
     // Seed the random number generator
     srand(time(NULL));
 
-    printf("=== WELCOME TO SLOTS ===\n");
+    printf("=== WELCOME TO TERMINAL SLOTS ===\n");
     printf("You start with $%d\n\n", balance);
 
     while (balance > 0) {
         printf("Current Balance: $%d\n", balance);
         printf("Enter your bet (0 to quit): ");
-
+        
         if (scanf("%d", &bet) != 1) {
             printf("Invalid input!\n");
             while(getchar() != '\n'); // Clear input buffer
@@ -73,38 +74,38 @@ int main() {
             const char* anim1 = (i < 7)  ? SYMBOLS[rand() % NUM_SYMBOLS] : reel1;
             const char* anim2 = (i < 14) ? SYMBOLS[rand() % NUM_SYMBOLS] : reel2;
             const char* anim3 = (i < 20) ? SYMBOLS[rand() % NUM_SYMBOLS] : reel3;
-
-            // Aligned layouts for dashes and reels
-            printf("  ----   ----   ----\n  ");
+            
+            // Perfectly balanced column grids for standard monospaced text rendering
+            printf("  -----   -----   -----\n  ");
             print_reel(anim1);
-            printf("   ");
+            printf(" ");
             print_reel(anim2);
-            printf("   ");
+            printf(" ");
             print_reel(anim3);
-            printf("\n  ----   ----   ----\n");
-
+            printf("\n  -----   -----   -----\n");
+            
             fflush(stdout);
-
+            
             if (i < 20) {
                 usleep(100000); // 100ms delay per frame
-                printf("\033[3A\r");
+                printf("\033[3A\r"); // Pull cursor up 3 lines to overwrite cleanly
             }
         }
-        printf("\n");
+        printf("\n"); 
         // --------------------------------------------
 
-        // Check win conditions
-        if (reel1 == reel2 && reel2 == reel3) {
+        // Check win conditions universally using safe string matching (strcmp)
+        if (strcmp(reel1, reel2) == 0 && strcmp(reel2, reel3) == 0) {
             int winnings = 0;
-            if (reel1 == SYMBOLS[4]) { // "👑"
-                winnings = bet * 10;
+            if (strcmp(reel1, SYMBOLS[4]) == 0) { // "👑"
+                winnings = bet * 10; 
                 printf(YELLOW "JACKPOT!! You won $%d!\n\n" RESET, winnings);
             } else {
                 winnings = bet * 5;
                 printf(GREEN "Three of a kind! You won $%d!\n\n" RESET, winnings);
             }
             balance += winnings;
-        } else if (reel1 == reel2 || reel2 == reel3 || reel1 == reel3) {
+        } else if (strcmp(reel1, reel2) == 0 || strcmp(reel2, reel3) == 0 || strcmp(reel1, reel3) == 0) {
             int winnings = bet * 2;
             printf(BLUE "Pair! You won $%d!\n\n" RESET, winnings);
             balance += winnings;
